@@ -5,7 +5,7 @@
   "author": "namlato102",
   "description": "backend dev",
   "engines": {
-    "node": "20.5.1"
+    "node": "18.16.0"
   },
   "scripts": {
     "lint": "eslint src --ext js --report-unused-disable-directives --max-warnings 0",
