@@ -1,7 +1,7 @@
 {
   "name": "my-api",
   "private": true,
-  "version": "v1.22.19",
+  "version": "1.0.0",
   "author": "namlato102",
   "description": "backend dev",
   "engines": {
