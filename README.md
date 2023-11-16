@@ -3,7 +3,7 @@
 ### Requirements: (Semantic Versioning)
 
 ```
-* nodejs = v20.5.1
+* nodejs = v18.16.1
 * npm = v9.8.1
 * yarn = v1.22.19
 
