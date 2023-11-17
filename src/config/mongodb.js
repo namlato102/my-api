@@ -1,8 +1,9 @@
-const MONGODB_URI = 'mongodb+srv://namlato102:Namlato102;@cluster0.0x8a0qk.mongodb.net/?retryWrites=true&w=majority'
-
-const DATABASE_NAME = 'trello-namlato102'
-
 import { MongoClient, ServerApiVersion } from 'mongodb'
+import { env } from '~/config/environment'
+
+const MONGODB_URI = env.MONGODB_URI
+const DATABASE_NAME = env.DATABASE_NAME
+
 
 // khoi tao mot doi tuong trelloDatabaseIbstance ban dau la null (vi chua connect)
 let trelloDatabaseInstance = null

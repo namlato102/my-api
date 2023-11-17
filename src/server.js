@@ -4,12 +4,14 @@
 import express from 'express'
 import exitHook from 'async-exit-hook'
 import { CONNECT_DB, GET_DB, CLOSE_DB } from '~/config/mongodb'
+// env variables
+import { env } from '~/config/environment'
 
 const START_SERVER = () => {
   const app = express()
 
-  const hostname = 'localhost'
-  const port = 8017
+  const hostname = env.APP_HOST
+  const port = env.APP_PORT
 
   // luon dung getdb trong start server vi connectdb can 1 khoang thoi gian de connect
   app.get('/', async (req, res) => {
@@ -19,11 +21,11 @@ const START_SERVER = () => {
 
   app.listen(port, hostname, () => {
     // eslint-disable-next-line no-console
-    console.log(`3. Hello Dev, I am running at http://${ hostname }:${ port }/`)
+    console.log(`3. Hello ${env.AUTHOR}, I am running at http://${ hostname }:${ port }/`)
   })
 
   exitHook(() => {
-    console.log('4. Disconnecting from MongoDB Cloud Atlas...')
+    console.log('4. Server is shutting down...')
     CLOSE_DB()
     console.log('5. Disconnected from MongoDB Cloud Atlas')
   })
