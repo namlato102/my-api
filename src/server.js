@@ -3,9 +3,10 @@
 
 import express from 'express'
 import exitHook from 'async-exit-hook'
-import { CONNECT_DB, GET_DB, CLOSE_DB } from '~/config/mongodb'
-// env variables
+import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb'
+// env variables - object destructuring
 import { env } from '~/config/environment'
+import { APIs_V1 } from '~/routes/v1'
 
 const START_SERVER = () => {
   const app = express()
@@ -13,11 +14,7 @@ const START_SERVER = () => {
   const hostname = env.APP_HOST
   const port = env.APP_PORT
 
-  // luon dung getdb trong start server vi connectdb can 1 khoang thoi gian de connect
-  app.get('/', async (req, res) => {
-    console.log(await GET_DB().listCollections().toArray())
-    res.end('<h1>Hello World!</h1><hr>')
-  })
+  app.use('/v1', APIs_V1)
 
   app.listen(port, hostname, () => {
     // eslint-disable-next-line no-console
