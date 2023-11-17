@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 
+// read https://joi.dev/api/?v=17.9.1
 const createNew = async (req, res, next) => {
 
   // Joi json object - using custom error msg
@@ -20,9 +21,8 @@ const createNew = async (req, res, next) => {
     // validate data from BE
     // set joi abortearly: flase to return every valid error from correctcondition
     await correctCondition.validateAsync(req.body, { abortEarly: false })
-    // dua request sang controller
+    // sau khi validate data thi request di tiep sang controller
     next()
-    res.status(StatusCodes.CREATED).json({ message: 'POST from Validation: API create new boards.', code: StatusCodes.CREATED })
   } catch (error) {
     res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
       errors: new Error(error).message,

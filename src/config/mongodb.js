@@ -9,6 +9,7 @@ const DATABASE_NAME = env.DATABASE_NAME
 let trelloDatabaseInstance = null
 
 // khoi tao mot doi tuong Client Instance de connect toi MongoDB
+// read mongoDB connection guide
 const mongoClientInstance = new MongoClient(MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
