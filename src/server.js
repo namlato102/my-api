@@ -14,6 +14,10 @@ const START_SERVER = () => {
   const hostname = env.APP_HOST
   const port = env.APP_PORT
 
+  // enable req.body json data avoid undefined
+  app.use(express.json())
+
+  // use APIs V1
   app.use('/v1', APIs_V1)
 
   app.listen(port, hostname, () => {
