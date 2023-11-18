@@ -2,6 +2,7 @@
 // tầng service xử lý logic, dữ liệu
 // return a promise
 import { slugify } from '../utils/formatters'
+import { boardModel } from '../models/boardModel'
 
 
 const createNew = async(reqbody) => {
@@ -15,6 +16,12 @@ const createNew = async(reqbody) => {
     /**
      * Gọi tới tầng Model dể xử lý lưu bản ghi newBoard vào trong Database
      */
+    const createdBoard = await boardModel.createNew(newBoard)
+    console.log(createdBoard)
+
+    // Lấy bản ghi board sau khi gọi
+    const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)
+    console.log(getNewBoard)
 
     /**
      * Làm thêm các xử lý logic khác với các Collection khác
@@ -22,7 +29,7 @@ const createNew = async(reqbody) => {
      */
 
     // service luôn phải có return trả về cho controller
-    return newBoard
+    return getNewBoard
   } catch (error) {
     throw error
   }

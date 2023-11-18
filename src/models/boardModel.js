@@ -2,6 +2,7 @@
 // https://stackoverflow.com/questions/57658864/how-to-validate-for-objectid
 import Joi from 'joi'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '../utils/validators'
+import { GET_DB } from '../config/mongodb'
 
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'boards'
@@ -20,7 +21,31 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
+const createNew = async (data) => {
+  try {
+    // https://www.mongodb.com/docs/drivers/node/current/usage-examples/insertOne/
+    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(data)
+    return createdBoard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const findOneById = async (id) => {
+  try {
+    // https://www.mongodb.com/docs/manual/reference/method/db.collection.findOne/#mongodb-method-db.collection.findOne
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
+      _id: id
+    })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
-  BOARD_COLLECTION_SCHEMA
+  BOARD_COLLECTION_SCHEMA,
+  createNew,
+  findOneById
 }
