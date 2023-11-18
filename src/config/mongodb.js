@@ -1,3 +1,4 @@
+// https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/connect/
 import { MongoClient, ServerApiVersion } from 'mongodb'
 import { env } from '~/config/environment'
 

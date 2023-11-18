@@ -1,5 +1,6 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
+import ApiError from '../utils/ApiError'
 
 // read https://joi.dev/api/?v=17.9.1
 const createNew = async (req, res, next) => {
@@ -19,17 +20,16 @@ const createNew = async (req, res, next) => {
   try {
     // console.log('req.body: ', req.body)
     // validate data from BE
-    // set joi abortearly: flase to return every valid error from correctcondition
+    // set joi abortearly: false to return every valid error from correctcondition
     await correctCondition.validateAsync(req.body, { abortEarly: false })
     // sau khi validate data thi request di tiep sang controller
     next()
   } catch (error) {
-    res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      errors: new Error(error).message,
-      code: StatusCodes.UNPROCESSABLE_ENTITY
-    })
+    const errorMessage = new Error(error).message
+    const customError = new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, errorMessage)
+    // redirect to errorHandlingMiddleware in server.js
+    next(customError)
   }
-
 }
 
 export const boardValidation = {
