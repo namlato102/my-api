@@ -1,5 +1,6 @@
+// tầng điều hướng
 import { StatusCodes } from 'http-status-codes'
-
+import { boardService } from '../services/boardService'
 
 const createNew = async (req, res, next) => {
   try {
@@ -8,13 +9,14 @@ const createNew = async (req, res, next) => {
     // // test error
     // throw new ApiError(StatusCodes.BAD_GATEWAY, 'Wtf Error!')
 
-    // dieu huong du lieu sang tang service
-    // next()
+    // điều hướng dữ liệu sang tầng service
+    // service se access vao model de create new Board roi tra ve cho controller createdboard
+    const createdBoard = await boardService.createNew(req.body)
 
-    // co ket qua thi tra ve client (data)
-    res.status(StatusCodes.CREATED).json({ message: 'POST from Controller: API create new boards.', code: StatusCodes.CREATED })
+    // có kết quả thì trả về client (data)
+    res.status(StatusCodes.CREATED).json(createdBoard)
   } catch (error) {
-    // redirect to error handle middleware in server.js
+    // nếu lỗi thì điều hướng tới tầng errorHandlingMiddleware
     next(error)
   }
 }
