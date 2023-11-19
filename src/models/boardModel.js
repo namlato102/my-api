@@ -3,12 +3,13 @@
 import Joi from 'joi'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '../utils/validators'
 import { GET_DB } from '../config/mongodb'
+import { ObjectId } from 'mongodb'
 
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
   title: Joi.string().required().min(3).max(50).trim().strict(),
-  slug: Joi.string().required().min(3).trim().strict(),
+  slugTitle: Joi.string().required().min(3).trim().strict(),
   description: Joi.string().required().min(3).max(256).trim().strict(),
 
   // Lưu ý các item trong mảng columnOrderIds là ObjectId nên cần thêm pattern cho chuẩn nhé
@@ -21,10 +22,15 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
+const validateBeforeCreate = async (data) => {
+  return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
+}
+
 const createNew = async (data) => {
   try {
+    const validData = await validateBeforeCreate(data)
     // https://www.mongodb.com/docs/drivers/node/current/usage-examples/insertOne/
-    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(data)
+    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)
     return createdBoard
   } catch (error) {
     throw new Error(error)
@@ -35,7 +41,7 @@ const findOneById = async (id) => {
   try {
     // https://www.mongodb.com/docs/manual/reference/method/db.collection.findOne/#mongodb-method-db.collection.findOne
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
-      _id: id
+      _id: new ObjectId(id)
     })
     return result
   } catch (error) {
