@@ -21,6 +21,17 @@ const createNew = async (req, res, next) => {
   }
 }
 
+const getBoardDetailsFromService= async (req, res, next) => {
+  try {
+    // id from route
+    const boardId = req.params.id
+    const board = await boardService.getBoardDetailsFromModel(boardId)
+
+    res.status(StatusCodes.OK).json(board)
+  } catch (error) { next(error) }
+}
+
 export const boardController = {
-  createNew
+  createNew,
+  getBoardDetailsFromService
 }

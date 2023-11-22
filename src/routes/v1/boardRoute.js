@@ -13,4 +13,10 @@ Router.route('/')
   })
   .post(boardValidation.createNew, boardController.createNew)
 
+Router.route('/:id')
+  // goi id tu db bat dau tu controller, ko can qua validation
+  .get(boardController.getBoardDetailsFromService)
+  // update
+  .put()
+
 export const boardRoutes = Router
