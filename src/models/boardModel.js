@@ -94,10 +94,30 @@ const getBoardDetailsFromDB = async (id) => {
   } catch (error) { throw new Error(error) }
 }
 
+// update columnId in columnOrderIds
+// https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
+// https://www.mongodb.com/docs/manual/reference/operator/update/push/
+const pushColumnOrderIds = async (column) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      // search and filter with boardId
+      // _id, boardId trong bang columns
+      { _id: new ObjectId(column.boardId) },
+      // update
+      { $push: { columnOrderIds: new ObjectId(column._id) } },
+      { returnDocument: 'after' }
+    )
+    return result.value
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  getBoardDetailsFromDB
+  getBoardDetailsFromDB,
+  pushColumnOrderIds
 }
