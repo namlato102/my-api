@@ -32,6 +32,7 @@ const START_SERVER = () => {
     console.log(`3. Hello ${env.AUTHOR}, I am running at http://${ hostname }:${ port }/`)
   })
 
+  // clean up before exit
   exitHook(() => {
     console.log('4. Server is shutting down...')
     CLOSE_DB()

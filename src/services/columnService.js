@@ -1,6 +1,6 @@
 
-import { boardModel } from '../models/boardModel'
-import { columnModel } from '../models/columnModel'
+import { boardModel } from '~/models/boardModel'
+import { columnModel } from '~/models/columnModel'
 
 
 const createNew = async(reqbody) => {

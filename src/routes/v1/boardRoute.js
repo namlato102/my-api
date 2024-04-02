@@ -6,11 +6,12 @@ import { boardController } from '~/controllers/boardController'
 // create modular, mountable route handlers
 const Router = express.Router()
 
-// create chainable route handlers
+// get list boards and create new board with validation middleware and controller
 Router.route('/')
   .get((req, res) => {
     res.status(StatusCodes.OK).json({ message: 'GET: API get list boards.', code: StatusCodes.OK })
   })
+  // declare validation middleware and then next to controller if validation pass
   .post(boardValidation.createNew, boardController.createNew)
 
 Router.route('/:id')
