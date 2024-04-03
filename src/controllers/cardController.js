@@ -1,6 +1,6 @@
 // tầng điều hướng
 import { StatusCodes } from 'http-status-codes'
-import { cardService } from '../services/cardService'
+import { cardService } from '~/services/cardService'
 
 const createNew = async (req, res, next) => {
   try {

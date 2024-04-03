@@ -1,22 +1,19 @@
 // tầng điều hướng
 import { StatusCodes } from 'http-status-codes'
-import { boardService } from '../services/boardService'
+import { boardService } from '~/services/boardService'
 
 const createNew = async (req, res, next) => {
   try {
-    // console.log('req.body: ', req.body)
-
-    // // test error
+    // test error
     // throw new ApiError(StatusCodes.BAD_GATEWAY, 'Wtf Error!')
 
-    // điều hướng dữ liệu sang tầng service
-    // service se access vao model de create new Board roi tra ve cho controller createdboard
+    // pass request to service to create new Board and return createdBoard to controller
     const createdBoard = await boardService.createNew(req.body)
 
-    // có kết quả thì trả về client (data)
+    // return createdBoard to client
     res.status(StatusCodes.CREATED).json(createdBoard)
   } catch (error) {
-    // nếu lỗi thì điều hướng tới tầng errorHandlingMiddleware
+    // if error, pass to errorHandlingMiddleware in server.js to return error to client
     next(error)
   }
 }

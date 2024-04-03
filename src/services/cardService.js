@@ -1,6 +1,6 @@
 
-import { cardModel } from '../models/cardModel'
-import { columnModel } from '../models/columnModel'
+import { cardModel } from '~/models/cardModel'
+import { columnModel } from '~/models/columnModel'
 
 
 const createNew = async(reqbody) => {
