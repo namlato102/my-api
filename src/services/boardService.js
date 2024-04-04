@@ -17,11 +17,11 @@ const createNew = async(reqbody) => {
 
     /**
      * Gọi tới tầng Model dể xử lý lưu bản ghi newBoard vào trong Database
-     * createdBoard.insertId is ready to access
+     * createdBoard.insertedId (insertOneResult.insertedId) is ready to access
      */
     const createdBoard = await boardModel.createNew(newBoard)
 
-    // returns a single document (BOARD_COLLECTION_SCHEMA) from the "boards" collection with selectedId
+    // returns a single document (BOARD_COLLECTION_SCHEMA) from the "boards" collection with insertOneResult.insertedId
     const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)
 
     /**
