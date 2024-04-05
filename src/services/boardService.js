@@ -45,15 +45,11 @@ const getBoardDetailsFromModel = async (boardId) => {
     // https://www.javascripttutorial.net/javascript-primitive-vs-reference-values/
     // create a copy of board
     const resBoard = cloneDeep(board)
-    // dua card ve dung column cua no
+    // đưa card về đúng column, vì trong model column và card cùng cấp
     resBoard.columns.forEach(column => {
-    //   // convert objectId to string with .toString() from js
-    //   column.cards = resBoard.cards.filter(card => card.columnId.toString() === column._id.toString())
-      // objectId.equal() is supported in mongoDB
       column.cards = resBoard.cards.filter(card => card.columnId.equals(column._id))
-
     })
-    // xoa mang cards khoi board ban dau
+    // xóa mảng cards khỏi board
     delete resBoard.cards
 
     return resBoard
