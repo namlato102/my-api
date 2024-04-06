@@ -17,11 +17,11 @@ const createNew = async(reqbody) => {
 
     /**
      * Gọi tới tầng Model dể xử lý lưu bản ghi newBoard vào trong Database
-     * createdBoard.insertId is ready to access
+     * createdBoard.insertedId (insertOneResult.insertedId) is ready to access
      */
     const createdBoard = await boardModel.createNew(newBoard)
 
-    // returns a single document (BOARD_COLLECTION_SCHEMA) from the "boards" collection with selectedId
+    // returns a single document (BOARD_COLLECTION_SCHEMA) from the "boards" collection with insertOneResult.insertedId
     const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)
 
     /**
@@ -45,15 +45,11 @@ const getBoardDetailsFromModel = async (boardId) => {
     // https://www.javascripttutorial.net/javascript-primitive-vs-reference-values/
     // create a copy of board
     const resBoard = cloneDeep(board)
-    // dua card ve dung column cua no
+    // đưa card về đúng column, vì trong model column và card cùng cấp
     resBoard.columns.forEach(column => {
-    //   // convert objectId to string with .toString() from js
-    //   column.cards = resBoard.cards.filter(card => card.columnId.toString() === column._id.toString())
-      // objectId.equal() is supported in mongoDB
       column.cards = resBoard.cards.filter(card => card.columnId.equals(column._id))
-
     })
-    // xoa mang cards khoi board ban dau
+    // xóa mảng cards khỏi board
     delete resBoard.cards
 
     return resBoard

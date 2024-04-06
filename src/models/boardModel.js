@@ -30,6 +30,7 @@ const validateBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
+// trả về một document từ bảng "boards" mongoDB với insertOneResult
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
@@ -46,6 +47,7 @@ const createNew = async (data) => {
   }
 }
 
+// trả về một full data document từ bảng "boards" từ mongoDB với _id phù hợp
 const findOneById = async (id) => {
   try {
     /**
