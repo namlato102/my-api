@@ -7,12 +7,12 @@ import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
 
-const createNew = async(reqbody) => {
+const createNew = async(reqBody) => {
   try {
     // xử lý logic dữ liệu tùy đặc thù dự án
     const newBoard = {
-      ...reqbody,
-      slugTitle: slugify(reqbody.title)
+      ...reqBody,
+      slugTitle: slugify(reqBody.title)
     }
 
     /**
@@ -56,7 +56,19 @@ const getBoardDetailsFromModel = async (boardId) => {
   } catch (error) { throw (error) }
 }
 
+const update = async (boardId, reqBody) => {
+  try {
+    const updateData = {
+      ...reqBody,
+      updatedAt: Date.now()
+    }
+    const updatedBoard = await boardModel.update(boardId, updateData)
+    return updatedBoard
+  } catch (error) { throw (error) }
+}
+
 export const boardService = {
   createNew,
-  getBoardDetailsFromModel
+  getBoardDetailsFromModel,
+  update
 }
