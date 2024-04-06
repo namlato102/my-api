@@ -18,6 +18,6 @@ Router.route('/:id')
   // goi id tu db bat dau tu controller, ko can qua validation
   .get(boardController.getBoardDetailsFromService)
   // update
-  .put()
+  .put(boardValidation.update, boardController.update)
 
 export const boardRoutes = Router
