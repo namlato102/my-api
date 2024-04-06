@@ -11,11 +11,10 @@ const createNew = async(reqbody) => {
     const createdColumn = await columnModel.createNew(newColumn)
     const getNewColumn = await columnModel.findOneById(createdColumn.insertedId)
 
+    // update columnOrderIds in boards collection when new column created
     if (getNewColumn) {
-    //  xu ly cau truc data trc khi tra du lieu ve
+      //  create empty array cards when create new column for client
       getNewColumn.cards = []
-
-      // update columnOrderIds in boards collection
       await boardModel.pushColumnOrderIds(getNewColumn)
     }
 

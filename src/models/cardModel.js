@@ -28,7 +28,7 @@ const createNew = async (data) => {
 
     const newCardToAdd = {
       ...validData,
-      // convert string to objectId
+      // overwrite boardId(string) and columnId(string) with ObjectId
       boardId: new ObjectId(validData.boardId),
       columnId: new ObjectId(validData.columnId)
     }
