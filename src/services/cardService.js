@@ -11,10 +11,11 @@ const createNew = async(reqbody) => {
     const createdCard = await cardModel.createNew(newCard)
     const getNewCard = await cardModel.findOneById(createdCard.insertedId)
 
+    // update cardOrderIds in columns collection when new card created
     if (getNewCard) {
-      // update cardOrderIds in columns collection
       await columnModel.pushCardOrderIds(getNewCard)
     }
+
     return getNewCard
   } catch (error) { throw error }
 }

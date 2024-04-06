@@ -70,9 +70,6 @@ const findOneById = async (id) => {
  */
 const getBoardDetailsFromDB = async (id) => {
   try {
-    // const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
-    //   _id: new ObjectId(id)
-    // })
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
       { $match: {
         _id: new ObjectId(id),
@@ -96,14 +93,13 @@ const getBoardDetailsFromDB = async (id) => {
   } catch (error) { throw new Error(error) }
 }
 
-// update columnId in columnOrderIds
+// push columnId into columnOrderIds array
 // https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
 // https://www.mongodb.com/docs/manual/reference/operator/update/push/
 const pushColumnOrderIds = async (column) => {
   try {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
-      // search and filter with boardId
-      // _id, boardId trong bang columns
+      // search and filter _id of boards collection with boardId from columns collection
       { _id: new ObjectId(column.boardId) },
       // update
       { $push: { columnOrderIds: new ObjectId(column._id) } },

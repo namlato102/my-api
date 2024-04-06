@@ -30,7 +30,7 @@ const createNew = async (data) => {
 
     const newColumnToAdd = {
       ...validData,
-      // convert string to objectId
+      // overwrite boardId(string) with ObjectId
       boardId: new ObjectId(validData.boardId)
     }
     const createdColumn = await GET_DB().collection(COLUMN_COLLECTION_NAME).insertOne(newColumnToAdd)
@@ -48,11 +48,11 @@ const findOneById = async (id) => {
   } catch (error) { throw new Error(error) }
 }
 
+// push cardId into cardOrderIds array
 const pushCardOrderIds = async (card) => {
   try {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
-      // search and filter with boardId
-      // _id, columnId trong bang cards
+      // search and filter _id of columns collection with columnId from cards collection
       { _id: new ObjectId(card.columnId) },
       // update
       { $push: { cardOrderIds: new ObjectId(card._id) } },
