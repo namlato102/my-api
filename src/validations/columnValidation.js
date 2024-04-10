@@ -19,6 +19,31 @@ const createNew = async (req, res, next) => {
   }
 }
 
+const update = async (req, res, next) => {
+  const correctCondition = Joi.object({
+    // if want to move column to another board then need to provide boardId
+    // boardId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    title: Joi.string().min(3).max(50).trim().strict(),
+    cardOrderIds: Joi.array().items(
+      Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+    )
+  })
+
+  try {
+    await correctCondition.validateAsync(req.body, {
+      abortEarly: false,
+      allowUnknown: true
+    })
+    // after data is validated, pass to controller
+    next()
+  } catch (error) {
+    const customError = new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message)
+    // if data is invalid, next to errorHandlingMiddleware in server.js to return error to client
+    next(customError)
+  }
+}
+
 export const columnValidation = {
-  createNew
+  createNew,
+  update
 }
