@@ -113,6 +113,23 @@ const pushColumnOrderIds = async (column) => {
   }
 }
 
+// take columnId out of columnOrderIds array then delete it
+// https://www.mongodb.com/docs/manual/reference/operator/update/pull/#mongodb-update-up.-pull
+const pullColumnOrderIds = async (column) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      // search and filter _id of boards collection with boardId from columns collection
+      { _id: new ObjectId(column.boardId) },
+      // update
+      { $pull: { columnOrderIds: new ObjectId(column._id) } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 const update = async (boardId, updateData) => {
   try {
     // delete invalid fields from updateData
@@ -145,5 +162,6 @@ export const boardModel = {
   findOneById,
   getBoardDetailsFromDB,
   pushColumnOrderIds,
-  update
+  update,
+  pullColumnOrderIds
 }
