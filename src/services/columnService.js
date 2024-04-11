@@ -1,5 +1,6 @@
 
 import { boardModel } from '~/models/boardModel'
+import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 
 
@@ -33,7 +34,18 @@ const update = async (columnId, reqBody) => {
   } catch (error) { throw (error) }
 }
 
+const deleteColumnDetails = async (columnId) => {
+  try {
+    // delete column from columns collection
+    await columnModel.deleteOneById(columnId)
+    // delete cards from column
+    await cardModel.deleteManyByColumnId(columnId)
+    return { deleteResult: 'Column deleted successfully.' }
+  } catch (error) { throw (error) }
+}
+
 export const columnService = {
   createNew,
-  update
+  update,
+  deleteColumnDetails
 }
