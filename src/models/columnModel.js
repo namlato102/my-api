@@ -40,11 +40,11 @@ const createNew = async (data) => {
   } catch (error) { throw new Error(error) }
 }
 
-const findOneById = async (id) => {
+const findOneById = async (columnId) => {
   try {
 
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOne({
-      _id: new ObjectId(id)
+      _id: new ObjectId(columnId)
     })
     return result
   } catch (error) { throw new Error(error) }
@@ -91,11 +91,23 @@ const update = async (columnId, updateData) => {
   }
 }
 
+// https://www.mongodb.com/docs/drivers/node/current/fundamentals/crud/write-operations/delete/
+const deleteOneById = async (columnId) => {
+  try {
+    const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).deleteOne({
+      _id: new ObjectId(columnId)
+    })
+    // console.log('result', result)
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   createNew,
   findOneById,
   pushCardOrderIds,
-  update
+  update,
+  deleteOneById
 }

@@ -50,14 +50,14 @@ const createNew = async (data) => {
 }
 
 // trả về một full data document từ bảng "boards" từ mongoDB với _id phù hợp
-const findOneById = async (id) => {
+const findOneById = async (boardId) => {
   try {
     /**
      * https://www.mongodb.com/docs/manual/reference/method/db.collection.findOne/#mongodb-method-db.collection.findOne
      * returns a single document (BOARD_COLLECTION_SCHEMA) from the "boards" collection with selectedId
      */
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
-      _id: new ObjectId(id)
+      _id: new ObjectId(boardId)
     })
     return result
   } catch (error) {
@@ -70,11 +70,11 @@ const findOneById = async (id) => {
  * https://www.mongodb.com/docs/v7.0/reference/operator/aggregation/lookup/
  * query a board and retrieve all column and card from the board
  */
-const getBoardDetailsFromDB = async (id) => {
+const getBoardDetailsFromDB = async (boardId) => {
   try {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
       { $match: {
-        _id: new ObjectId(id),
+        _id: new ObjectId(boardId),
         _destroy: false
       } },
       { $lookup: {
