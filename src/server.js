@@ -15,8 +15,9 @@ const START_SERVER = () => {
   // cors handle
   app.use(cors(corsOptions))
 
-  const hostname = env.APP_HOST
-  const port = env.APP_PORT
+  const hostname = env.LOCAL_DEV_APP_HOST
+  const port = env.LOCAL_DEV_APP_PORT
+  const author = env.AUTHOR
 
   // enable req.body json data avoid undefined
   app.use(express.json())
@@ -27,10 +28,19 @@ const START_SERVER = () => {
   // error handle middleware
   app.use(errorHandlingMiddleware)
 
-  app.listen(port, hostname, () => {
-    // eslint-disable-next-line no-console
-    console.log(`3. Hello ${env.AUTHOR}, I am running at http://${ hostname }:${ port }/`)
-  })
+  if (env.BUILD_MODE === 'prod') {
+    // production mode support render
+    app.listen(process.env.PORT, () => {
+      // eslint-disable-next-line no-console
+      console.log(`3. Production: Hello ${author}, I am running at Port: ${ process.env.PORT }/`)
+    })
+  } else {
+    // dev mode
+    app.listen(port, hostname, () => {
+      // eslint-disable-next-line no-console
+      console.log(`3. Local DEV: Hello ${author}, I am running at http://${ hostname }:${ port }/`)
+    })
+  }
 
   // clean up before exit
   exitHook(() => {
