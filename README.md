@@ -1,8 +1,7 @@
 
+# Requirements: (Semantic Versioning)
 
-### Requirements: (Semantic Versioning)
-
-```
+```text
 * nodejs = v18.16.1
 * npm = v9.8.1
 * yarn = v1.22.19
@@ -20,5 +19,3 @@
 * "@babel/preset-env": "^7.22.10"
 * "babel-plugin-module-resolver": "^5.0.0"
 ```
-
-
