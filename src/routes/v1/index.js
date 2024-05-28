@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { boardRoutes } from '~/routes/v1/boardRoute'
 import { cardRoutes } from './cardRoute'
 import { columnRoutes } from './columnRoute'
+import { userRoute } from '~/routes/v1/userRoute'
 
 // create modular, mountable route handlers
 const Router = express.Router()
@@ -21,5 +22,8 @@ Router.use('/columns', columnRoutes)
 
 /** Cards APIs */
 Router.use('/cards', cardRoutes)
+
+/** User APIs */
+Router.use('/users', userRoute)
 
 export const APIs_V1 = Router
