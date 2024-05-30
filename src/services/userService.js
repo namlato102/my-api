@@ -4,6 +4,8 @@ import { StatusCodes } from 'http-status-codes'
 import bcryptjs from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
 import { pickUser } from '~/utils/formatters'
+import { WEBSITE_DOMAIN } from '~/utils/constants'
+import { BrevoProvider } from '~/providers/BrevoProvider'
 
 const createNew = async (reqBody) => {
   try {
@@ -27,6 +29,17 @@ const createNew = async (reqBody) => {
     // save user info to db
     const createdUser = await userModel.createNew(newUser)
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
+
+    // send email to user to verify their account
+    const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
+    const customSubject = 'MyTrello: Please verify your email before using our services!'
+    const customHtmlContent = `
+      <h3>Here is your verification link:</h3>
+      <h3>${verificationLink}</h3>
+      <h3>Sincerely,<br/> - MyTrello Team - </h3>
+    `
+    // use BrevoProvider to send email
+    await BrevoProvider.sendEmail(getNewUser.email, customSubject, customHtmlContent)
 
     // return data to controller
     return pickUser(getNewUser)
