@@ -46,6 +46,37 @@ const createNew = async (reqBody) => {
   } catch (error) { throw error }
 }
 
+const verifyAccount = async (reqBody) => {
+  try {
+    // check user account is existed or not
+    const existedUser = await userModel.findOneByEmail(reqBody.email)
+    if (!existedUser) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    }
+
+    // check user account is active or not
+    if (existedUser.isActive) {
+      throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your Account is already active!')
+    }
+
+    // check user token is correct or not. check token from request body from fe payload and verifyToken from database
+    if (reqBody.token !== existedUser.verifyToken) {
+      throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Token is invalid!')
+    }
+
+    // update user information to active account, remove verifyToken
+    const updateData = {
+      isActive: true,
+      verifyToken: null
+    }
+
+    const updatedUser = await userModel.update(existedUser._id, updateData)
+    // return value for controller
+    return pickUser(updatedUser)
+  } catch (error) { throw error }
+}
+
 export const userService = {
-  createNew
+  createNew,
+  verifyAccount
 }
