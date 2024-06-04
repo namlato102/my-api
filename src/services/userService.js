@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { pickUser } from '~/utils/formatters'
 import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { BrevoProvider } from '~/providers/BrevoProvider'
+import { JwtProvider } from '~/providers/JwtProvider'
+import { env } from '~/config/environment'
 
 const createNew = async (reqBody) => {
   try {
@@ -76,7 +78,54 @@ const verifyAccount = async (reqBody) => {
   } catch (error) { throw error }
 }
 
+const login = async (reqBody) => {
+  try {
+    // Query user trong Database
+    const existedUser = await userModel.findOneByEmail(reqBody.email)
+
+    // check user account existence and activation
+    if (!existedUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    if (!existedUser.isActive) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is not active!')
+
+    // check password is correct or not
+    const isCorrectPassword = bcryptjs.compareSync(reqBody.password, existedUser.password)
+    if (!isCorrectPassword) {
+      throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your email or password is incorrect!')
+    }
+
+    /**
+     * If everything is ok, start creating Tokens to return to FE
+     * https://www.npmjs.com/package/jsonwebtoken
+     */
+    // create userInfo object to attach in token with _id and email of user
+    const userInfo = {
+      _id: existedUser._id,
+      email: existedUser.email
+    }
+    // create accessToken and refreshToken for user then return to FE
+    const accessToken = await JwtProvider.generateToken(
+      userInfo,
+      env.ACCESS_TOKEN_SECRET_SIGNATURE,
+      env.ACCESS_TOKEN_LIFE
+    )
+    const refreshToken = await JwtProvider.generateToken(
+      { email: existedUser.email },
+      env.REFRESH_TOKEN_SECRET_SIGNATURE,
+      env.REFRESH_TOKEN_LIFE
+    )
+
+    // return user info with accessToken and refreshToken for controller
+    return {
+      ...pickUser(existedUser),
+      accessToken,
+      refreshToken
+    }
+  } catch (error) { throw error }
+
+}
+
 export const userService = {
   createNew,
-  verifyAccount
+  verifyAccount,
+  login
 }

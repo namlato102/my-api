@@ -15,7 +15,18 @@ const verifyAccount = async (req, res, next) => {
   } catch (error) { next(error) }
 }
 
+const login = async (req, res, next) => {
+  try {
+    const result = await userService.login(req.body)
+
+    // handle return http only cookie for browser
+    // console.log('login': result)
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) { next(error) }
+}
+
 export const userController = {
   createNew,
-  verifyAccount
+  verifyAccount,
+  login
 }
