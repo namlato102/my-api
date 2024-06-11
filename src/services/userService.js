@@ -121,11 +121,34 @@ const login = async (reqBody) => {
       refreshToken
     }
   } catch (error) { throw error }
+}
 
+const refreshToken = async (clientRefreshToken) => {
+  try {
+    // Decode clientRefreshToken in order to check if it is valid or not
+    const refreshTokenDecoded = await JwtProvider.verifyToken(
+      clientRefreshToken,
+      env.REFRESH_TOKEN_SECRET_SIGNATURE
+    )
+
+    // then create userInfo object to attach in token with _id and email of user from refreshTokenDecoded => less query to DB
+    const userInfo = { _id: refreshTokenDecoded._id, email: refreshTokenDecoded.email }
+
+    // then create new accessToken for user
+    const accessToken = await JwtProvider.generateToken(
+      userInfo,
+      env.ACCESS_TOKEN_SECRET_SIGNATURE,
+      env.ACCESS_TOKEN_LIFE
+    )
+
+    // return accessToken for controller
+    return { accessToken }
+  } catch (error) { throw error }
 }
 
 export const userService = {
   createNew,
   verifyAccount,
-  login
+  login,
+  refreshToken
 }
