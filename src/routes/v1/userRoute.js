@@ -2,6 +2,7 @@ import express from 'express'
 import { userValidation } from '~/validations/userValidation'
 import { userController } from '~/controllers/userController'
 import { authMiddleware } from '~/middlewares/authMiddleware'
+import { multerUploadMiddleware } from '~/middlewares/multerUploadMiddleware'
 
 const Router = express.Router()
 
@@ -21,6 +22,11 @@ Router.route('/refresh_token')
   .put(userController.refreshToken)
 
 Router.route('/update')
-  .put(authMiddleware.isAuthorized, userValidation.update, userController.update)
+  .put(
+    authMiddleware.isAuthorized,
+    // take the file with the name 'avatar' in the form in FE
+    multerUploadMiddleware.upload.single('avatar'),
+    userValidation.update,
+    userController.update)
 
 export const userRoute = Router
