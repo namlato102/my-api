@@ -13,3 +13,6 @@ export const BOARD_TYPES = {
 
 // config web domain for email verification with production and development mode
 export const WEBSITE_DOMAIN = env.BUILD_MODE === 'production' ? env.WEBSITE_DOMAIN_PRODUCTION : env.WEBSITE_DOMAIN_DEVELOPMENT
+
+export const DEFAULT_PAGE = 1
+export const DEFAULT_ITEMS_PER_PAGE = 12
