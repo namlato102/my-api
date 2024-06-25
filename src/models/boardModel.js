@@ -41,16 +41,14 @@ const validateBeforeCreate = async (data) => {
 }
 
 // trả về một document từ bảng "boards" mongoDB với insertOneResult
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    /**
-     * https://www.mongodb.com/docs/drivers/node/current/usage-examples/insertOne/
-     * Connect to the "mongoDB" database and access its "boards" collection
-     * Insert the defined document (BOARD_COLLECTION_SCHEMA) into the "boards" collection
-     * ID of the inserted document is added: .insertedId
-     */
-    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)
+    const newBoardToAdd = {
+      ...validData,
+      ownerIds: [new ObjectId(userId)]
+    }
+    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(newBoardToAdd)
     return createdBoard
   } catch (error) {
     throw new Error(error)
@@ -78,13 +76,22 @@ const findOneById = async (boardId) => {
  * https://www.mongodb.com/docs/v7.0/reference/operator/aggregation/lookup/
  * query a board and retrieve all column and card from the board
  */
-const getBoardDetailsFromDB = async (boardId) => {
+const getBoardDetailsFromDB = async (userId, boardId) => {
   try {
+    const queryConditions = [
+      // Điều kiện 01:
+      { _id: new ObjectId(boardId) },
+      // Điều kiện 02: Board chưa bị xóa
+      { _destroy: false },
+      // Điều kiện 03: cái thằng userId đang thực hiện request này nó phải thuộc vào một trong 2 cái mảng ownerIds hoặc memberIds, sử dụng toán tử $all của mongodb
+      { $or: [
+        { ownerIds: { $all: [new ObjectId(userId)] } },
+        { memberIds: { $all: [new ObjectId(userId)] } }
+      ] }
+    ]
+
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
-      { $match: {
-        _id: new ObjectId(boardId),
-        _destroy: false
-      } },
+      { $match: { $and: queryConditions } },
       { $lookup: {
         from: columnModel.COLUMN_COLLECTION_NAME,
         localField: '_id',
