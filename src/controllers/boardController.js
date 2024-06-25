@@ -4,11 +4,10 @@ import { boardService } from '~/services/boardService'
 
 const createNew = async (req, res, next) => {
   try {
-    // test error
-    // throw new ApiError(StatusCodes.BAD_GATEWAY, 'Wtf Error!')
+    const userId = req.jwtDecoded._id
 
     // pass request to service to create new Board and return createdBoard to controller
-    const createdBoard = await boardService.createNew(req.body)
+    const createdBoard = await boardService.createNew(userId, req.body)
 
     // return createdBoard to client
     res.status(StatusCodes.CREATED).json(createdBoard)
@@ -22,7 +21,8 @@ const getBoardDetailsFromService = async (req, res, next) => {
   try {
     // id from route
     const boardId = req.params.id
-    const board = await boardService.getBoardDetailsFromModel(boardId)
+    const userId = req.jwtDecoded._id
+    const board = await boardService.getBoardDetailsFromModel(userId, boardId)
 
     res.status(StatusCodes.OK).json(board)
   } catch (error) { next(error) }
