@@ -8,6 +8,7 @@ import { BOARD_TYPES } from '~/utils/constants'
 import { columnModel } from './columnModel'
 import { cardModel } from './cardModel'
 import { pagingSkipValue } from '~/utils/algorithms'
+import { userModel } from '~/models/userModel'
 
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'boards'
@@ -74,7 +75,7 @@ const findOneById = async (boardId) => {
 /**
  * https://www.mongodb.com/docs/manual/reference/method/db.collection.aggregate/
  * https://www.mongodb.com/docs/v7.0/reference/operator/aggregation/lookup/
- * query a board and retrieve all column and card from the board
+ * query a board and retrieve all column, card, Owners and Members from the board
  */
 const getBoardDetailsFromDB = async (userId, boardId) => {
   try {
@@ -103,6 +104,22 @@ const getBoardDetailsFromDB = async (userId, boardId) => {
         localField: '_id',
         foreignField: 'boardId',
         as: 'cards'
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'ownerIds',
+        foreignField: '_id',
+        as: 'owners',
+        // pipeline trong lookup là để xử lý một hoặc nhiều luồng cần thiết
+        // $project để chỉ định vài field không muốn lấy về bằng cách gán nó giá trị 0
+        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'memberIds',
+        foreignField: '_id',
+        as: 'members',
+        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
       } }
     ]).toArray()
 
