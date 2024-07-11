@@ -5,6 +5,7 @@ import { authMiddleware } from '~/middlewares/authMiddleware'
 
 const Router = express.Router()
 
+// Create a new Board Invitation
 Router.route('/board')
   .post(
     authMiddleware.isAuthorized,
@@ -15,5 +16,9 @@ Router.route('/board')
 // Get invitations by User
 Router.route('/')
   .get(authMiddleware.isAuthorized, invitationController.getInvitations)
+
+// Update a Board Invitation
+Router.route('/board/:invitationId')
+  .put(authMiddleware.isAuthorized, invitationController.updateBoardInvitation)
 
 export const invitationRoute = Router
