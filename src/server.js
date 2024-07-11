@@ -9,6 +9,12 @@ import { env } from '~/config/environment'
 import { APIs_V1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
 import cookieParser from 'cookie-parser'
+// Xử lý socket real-time với gói socket.io
+// https://socket.io/get-started/chat/#integrating-socketio
+import http from 'http'
+import socketIo from 'socket.io'
+import { inviteUserToBoardSocket } from '~/sockets/inviteUserToBoardSocket'
+
 
 const START_SERVER = () => {
   const app = express()
@@ -39,15 +45,23 @@ const START_SERVER = () => {
   // error handle middleware
   app.use(errorHandlingMiddleware)
 
+  // Tạo mới một cái server bọc thằng app của express để cấu hình tính năng real-time với socket.io
+  const server = http.createServer(app)
+  // Khởi tạo biến io với server và cấu hình cors
+  const io = socketIo(server, { cors: corsOptions })
+  io.on('connection', (socket) => {
+    inviteUserToBoardSocket(socket)
+  })
+
   if (env.BUILD_MODE === 'prod') {
     // production mode support render
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       // eslint-disable-next-line no-console
       console.log(`3. Production: Hello ${author}, I am running at Port: ${ process.env.PORT }/`)
     })
   } else {
     // dev mode
-    app.listen(port, hostname, () => {
+    server.listen(port, hostname, () => {
       // eslint-disable-next-line no-console
       console.log(`3. Local DEV: Hello ${author}, I am running at http://${ hostname }:${ port }/`)
     })
