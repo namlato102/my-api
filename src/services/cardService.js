@@ -41,6 +41,9 @@ const update = async (cardId, reqBody, cardCoverFile, userInfo) => {
         commentedAt: Date.now()
       }
       updatedCard = await cardModel.unshiftNewComment(cardId, commentData)
+    } else if (updateData.incomingMemberInfo) {
+      // Trường hợp thêm mới (ADD) hoặc xóa (REMOVE) thành viên ra khỏi card
+      updatedCard = await cardModel.updateMembers(cardId, updateData.incomingMemberInfo)
     } else {
       updatedCard = await cardModel.update(cardId, updateData)
     }
