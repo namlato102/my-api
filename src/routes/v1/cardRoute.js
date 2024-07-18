@@ -2,6 +2,8 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { cardController } from '~/controllers/cardController'
 import { cardValidation } from '~/validations/cardValidation'
+import { authMiddleware } from '~/middlewares/authMiddleware'
+import { multerUploadMiddleware } from '~/middlewares/multerUploadMiddleware'
 
 const Router = express.Router()
 
@@ -10,6 +12,14 @@ Router.route('/')
   .get((req, res) => {
     res.status(StatusCodes.OK).json({ message: 'GET: API get list cards.', code: StatusCodes.OK })
   })
-  .post(cardValidation.createNew, cardController.createNew)
+  .post(authMiddleware.isAuthorized, cardValidation.createNew, cardController.createNew)
+
+Router.route('/:id')
+  .put(
+    authMiddleware.isAuthorized,
+    multerUploadMiddleware.upload.single('cardCover'),
+    cardValidation.update,
+    cardController.update
+  )
 
 export const cardRoutes = Router

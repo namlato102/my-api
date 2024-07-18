@@ -1,6 +1,7 @@
 
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
 
 
 const createNew = async(reqbody) => {
@@ -20,6 +21,38 @@ const createNew = async(reqbody) => {
   } catch (error) { throw error }
 }
 
+const update = async (cardId, reqBody, cardCoverFile, userInfo) => {
+  try {
+    const updateData = {
+      ...reqBody,
+      updatedAt: Date.now()
+    }
+    let updatedCard = {}
+
+    if (cardCoverFile) {
+      const uploadResult = await CloudinaryProvider.streamUpload(cardCoverFile.buffer, 'card-covers')
+      updatedCard = await cardModel.update(cardId, { cover: uploadResult.secure_url })
+    } else if (updateData.commentToAdd) {
+      // Tạo dữ liệu comment để thêm vào Database > Card, cần bổ sung thêm những field cần thiết
+      const commentData = {
+        ...updateData.commentToAdd,
+        userId: userInfo._id,
+        userEmail: userInfo.email,
+        commentedAt: Date.now()
+      }
+      updatedCard = await cardModel.unshiftNewComment(cardId, commentData)
+    } else if (updateData.incomingMemberInfo) {
+      // Trường hợp thêm mới (ADD) hoặc xóa (REMOVE) thành viên ra khỏi card
+      updatedCard = await cardModel.updateMembers(cardId, updateData.incomingMemberInfo)
+    } else {
+      updatedCard = await cardModel.update(cardId, updateData)
+    }
+
+    return updatedCard
+  } catch (error) { throw error }
+}
+
 export const cardService = {
-  createNew
+  createNew,
+  update
 }

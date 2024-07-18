@@ -7,6 +7,8 @@ import { ObjectId } from 'mongodb'
 import { BOARD_TYPES } from '~/utils/constants'
 import { columnModel } from './columnModel'
 import { cardModel } from './cardModel'
+import { pagingSkipValue } from '~/utils/algorithms'
+import { userModel } from '~/models/userModel'
 
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'boards'
@@ -18,6 +20,13 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
 
   // Lưu ý các item trong mảng columnOrderIds là ObjectId nên cần thêm pattern cho chuẩn nhé
   columnOrderIds: Joi.array().items(
+    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+  ).default([]),
+
+  ownerIds: Joi.array().items(
+    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+  ).default([]),
+  memberIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
 
@@ -33,16 +42,14 @@ const validateBeforeCreate = async (data) => {
 }
 
 // trả về một document từ bảng "boards" mongoDB với insertOneResult
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    /**
-     * https://www.mongodb.com/docs/drivers/node/current/usage-examples/insertOne/
-     * Connect to the "mongoDB" database and access its "boards" collection
-     * Insert the defined document (BOARD_COLLECTION_SCHEMA) into the "boards" collection
-     * ID of the inserted document is added: .insertedId
-     */
-    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)
+    const newBoardToAdd = {
+      ...validData,
+      ownerIds: [new ObjectId(userId)]
+    }
+    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(newBoardToAdd)
     return createdBoard
   } catch (error) {
     throw new Error(error)
@@ -68,15 +75,24 @@ const findOneById = async (boardId) => {
 /**
  * https://www.mongodb.com/docs/manual/reference/method/db.collection.aggregate/
  * https://www.mongodb.com/docs/v7.0/reference/operator/aggregation/lookup/
- * query a board and retrieve all column and card from the board
+ * query a board and retrieve all column, card, Owners and Members from the board
  */
-const getBoardDetailsFromDB = async (boardId) => {
+const getBoardDetailsFromDB = async (userId, boardId) => {
   try {
+    const queryConditions = [
+      // Điều kiện 01:
+      { _id: new ObjectId(boardId) },
+      // Điều kiện 02: Board chưa bị xóa
+      { _destroy: false },
+      // Điều kiện 03: cái thằng userId đang thực hiện request này nó phải thuộc vào một trong 2 cái mảng ownerIds hoặc memberIds, sử dụng toán tử $all của mongodb
+      { $or: [
+        { ownerIds: { $all: [new ObjectId(userId)] } },
+        { memberIds: { $all: [new ObjectId(userId)] } }
+      ] }
+    ]
+
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
-      { $match: {
-        _id: new ObjectId(boardId),
-        _destroy: false
-      } },
+      { $match: { $and: queryConditions } },
       { $lookup: {
         from: columnModel.COLUMN_COLLECTION_NAME,
         localField: '_id',
@@ -88,6 +104,22 @@ const getBoardDetailsFromDB = async (boardId) => {
         localField: '_id',
         foreignField: 'boardId',
         as: 'cards'
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'ownerIds',
+        foreignField: '_id',
+        as: 'owners',
+        // pipeline trong lookup là để xử lý một hoặc nhiều luồng cần thiết
+        // $project để chỉ định vài field không muốn lấy về bằng cách gán nó giá trị 0
+        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'memberIds',
+        foreignField: '_id',
+        as: 'members',
+        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
       } }
     ]).toArray()
 
@@ -155,6 +187,64 @@ const update = async (boardId, updateData) => {
   }
 }
 
+const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
+  try {
+    const queryConditions = [
+      { _destroy: false },
+      { $or: [
+        { ownerIds: { $all: [new ObjectId(userId)] } },
+        { memberIds: { $all: [new ObjectId(userId)] } }
+      ] }
+    ]
+
+    // Xử lý query filter cho từng trường hợp search board, ví dụ search title...vv
+    if (queryFilters) {
+      Object.keys(queryFilters).forEach(key => {
+        // Không phân biệt chữ hoa chữ thường
+        queryConditions.push({ [key]: { $regex: new RegExp(queryFilters[key], 'i') } })
+      })
+    }
+    // console.log('queryConditions: ', queryConditions)
+
+    const query = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate(
+      [
+        { $match: { $and: queryConditions } },
+        { $sort: { title: 1 } },
+        { $facet: {
+          'queryBoards': [
+            { $skip: pagingSkipValue(page, itemsPerPage) },
+            { $limit: itemsPerPage }
+          ],
+          'queryTotalBoards': [{ $count: 'countedAllBoards' }]
+        } }
+      ],
+      // Khai báo thêm thuộc tính collation locale 'en' để fix chữ B hoa và a thường ở trên
+      // https://www.mongodb.com/docs/v6.0/reference/collation/#std-label-collation-document-fields
+      { collation: { locale: 'en' } }
+    ).toArray()
+
+    // console.log('query: ', query)
+    const res = query[0]
+    // console.log('res.queryTotalBoards[0]: ', res.queryTotalBoards[0])
+
+    return {
+      boards: res.queryBoards || [],
+      totalBoards: res.queryTotalBoards[0]?.countedAllBoards || 0
+    }
+  } catch (error) { throw new Error(error) }
+}
+
+const pushMemberIds = async (boardId, userId) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(boardId) },
+      { $push: { memberIds: new ObjectId(userId) } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -163,5 +253,7 @@ export const boardModel = {
   getBoardDetailsFromDB,
   pushColumnOrderIds,
   update,
-  pullColumnOrderIds
+  pullColumnOrderIds,
+  getBoards,
+  pushMemberIds
 }
