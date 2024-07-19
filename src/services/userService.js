@@ -36,7 +36,7 @@ const createNew = async (reqBody) => {
     let verificationLink = ''
     if (env.BUILD_MODE === 'prod') {
       // prod mode
-      verificationLink = `${env.WEBSITE_DOMAIN_PRODUCTION}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
+      verificationLink = `${process.env.WEBSITE_DOMAIN_PRODUCTION}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
     } else {
       // dev mode
       verificationLink = `${env.WEBSITE_DOMAIN_DEVELOPMENT}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
