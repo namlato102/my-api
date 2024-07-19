@@ -8,6 +8,7 @@ import { BrevoProvider } from '~/providers/BrevoProvider'
 import { JwtProvider } from '~/providers/JwtProvider'
 import { env } from '~/config/environment'
 import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
+import { WEBSITE_DOMAIN } from '~/utils/constants'
 
 const createNew = async (reqBody) => {
   try {
@@ -33,14 +34,7 @@ const createNew = async (reqBody) => {
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
 
     // send email to user to verify their account
-    let verificationLink = ''
-    if (env.BUILD_MODE === 'prod') {
-      // prod mode
-      verificationLink = `${process.env.WEBSITE_DOMAIN_PRODUCTION}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
-    } else {
-      // dev mode
-      verificationLink = `${env.WEBSITE_DOMAIN_DEVELOPMENT}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
-    }
+    const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
 
     const customSubject = 'MyTrello: Please verify your email before using our services!'
     const customHtmlContent = `

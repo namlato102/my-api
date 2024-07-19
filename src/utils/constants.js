@@ -1,4 +1,4 @@
-// import { env } from '~/config/environment'
+import { env } from '~/config/environment'
 
 export const WHITELIST_DOMAINS = [
   // config/cors always allow localhost when in dev mode
@@ -12,7 +12,7 @@ export const BOARD_TYPES = {
 }
 
 // config web domain for email verification with production and development mode
-// export const WEBSITE_DOMAIN = env.BUILD_MODE === 'prod' ? env.WEBSITE_DOMAIN_PRODUCTION : env.WEBSITE_DOMAIN_DEVELOPMENT
+export const WEBSITE_DOMAIN = env.BUILD_MODE === 'prod' ? env.WEBSITE_DOMAIN_PRODUCTION : env.WEBSITE_DOMAIN_DEVELOPMENT
 
 export const DEFAULT_PAGE = 1
 export const DEFAULT_ITEMS_PER_PAGE = 12
