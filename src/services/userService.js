@@ -34,7 +34,8 @@ const createNew = async (reqBody) => {
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
 
     // send email to user to verify their account
-    const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
+    const verificationLink = env.BUILD_MODE === 'production' ? `https://trello-web-khaki.vercel.app/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
+      : `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
     const customSubject = 'MyTrello: Please verify your email before using our services!'
     const customHtmlContent = `
       <h3>Here is your verification link:</h3>
