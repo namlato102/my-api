@@ -33,18 +33,15 @@ const createNew = async (reqBody) => {
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
 
     // send email to user to verify their account
-    const WEBSITE_DOMAIN = env.BUILD_MODE === 'prod' ? env.WEBSITE_DOMAIN_PRODUCTION : env.WEBSITE_DOMAIN_DEVELOPMENT
+    let verificationLink = ''
+    if (env.BUILD_MODE === 'prod') {
+      // prod mode
+      verificationLink = `${env.WEBSITE_DOMAIN_PRODUCTION}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
+    } else {
+      // dev mode
+      verificationLink = `${env.WEBSITE_DOMAIN_DEVELOPMENT}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
+    }
 
-    // let verificationLink = ''
-    // if (env.BUILD_MODE === 'prod') {
-    //   // prod mode
-    //   verificationLink = `${env.WEBSITE_DOMAIN_PRODUCTION}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
-    // } else {
-    //   // dev mode
-    //   verificationLink = `${env.WEBSITE_DOMAIN_DEVELOPMENT}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
-    // }
-
-    const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
     const customSubject = 'MyTrello: Please verify your email before using our services!'
     const customHtmlContent = `
       <h3>Here is your verification link:</h3>
