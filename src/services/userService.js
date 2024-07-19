@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import bcryptjs from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
 import { pickUser } from '~/utils/formatters'
-// import { WEBSITE_DOMAIN } from '~/utils/constants'
+import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { BrevoProvider } from '~/providers/BrevoProvider'
 import { JwtProvider } from '~/providers/JwtProvider'
 import { env } from '~/config/environment'
@@ -34,9 +34,7 @@ const createNew = async (reqBody) => {
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
 
     // send email to user to verify their account
-    // const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
-    const verificationLink = `https://trello-web-khaki.vercel.app/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
-
+    const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
 
     const customSubject = 'MyTrello: Please verify your email before using our services!'
     const customHtmlContent = `
