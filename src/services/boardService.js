@@ -10,7 +10,7 @@ import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { DEFAULT_PAGE, DEFAULT_ITEMS_PER_PAGE } from '~/utils/constants'
 
-const createNew = async(userId, reqBody) => {
+const createNew = async (userId, reqBody) => {
   try {
     // xử lý logic dữ liệu tùy đặc thù dự án
     const newBoard = {
@@ -110,10 +110,31 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
   } catch (error) { throw error }
 }
 
+const deleteItem = async (boardId) => {
+  try {
+    const targetBoard = await boardModel.findOneById(boardId)
+    if (!targetBoard) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!')
+    }
+
+    // Delete Board
+    await boardModel.deleteOneById(boardId)
+
+    // Delete Columns in Board
+    await columnModel.deleteManyByBoardId(boardId)
+
+    // Delete Cards in Board
+    await cardModel.deleteManyByBoardId(boardId)
+
+    return { deleteResult: 'Board and its content deleted successfully!' }
+  } catch (error) { throw error }
+}
+
 export const boardService = {
   createNew,
   getBoardDetailsFromModel,
   update,
   moveCardToDifferentColumn,
-  getBoards
+  getBoards,
+  deleteItem
 }

@@ -85,42 +85,74 @@ const getBoardDetailsFromDB = async (userId, boardId) => {
       // Điều kiện 02: Board chưa bị xóa
       { _destroy: false },
       // Điều kiện 03: cái thằng userId đang thực hiện request này nó phải thuộc vào một trong 2 cái mảng ownerIds hoặc memberIds, sử dụng toán tử $all của mongodb
-      { $or: [
-        { ownerIds: { $all: [new ObjectId(userId)] } },
-        { memberIds: { $all: [new ObjectId(userId)] } }
-      ] }
+      {
+        $or: [
+          { ownerIds: { $all: [new ObjectId(userId)] } },
+          { memberIds: { $all: [new ObjectId(userId)] } }
+        ]
+      }
     ]
 
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
       { $match: { $and: queryConditions } },
-      { $lookup: {
-        from: columnModel.COLUMN_COLLECTION_NAME,
-        localField: '_id',
-        foreignField: 'boardId',
-        as: 'columns'
-      } },
-      { $lookup: {
-        from: cardModel.CARD_COLLECTION_NAME,
-        localField: '_id',
-        foreignField: 'boardId',
-        as: 'cards'
-      } },
-      { $lookup: {
-        from: userModel.USER_COLLECTION_NAME,
-        localField: 'ownerIds',
-        foreignField: '_id',
-        as: 'owners',
-        // pipeline trong lookup là để xử lý một hoặc nhiều luồng cần thiết
-        // $project để chỉ định vài field không muốn lấy về bằng cách gán nó giá trị 0
-        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
-      } },
-      { $lookup: {
-        from: userModel.USER_COLLECTION_NAME,
-        localField: 'memberIds',
-        foreignField: '_id',
-        as: 'members',
-        pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
-      } }
+      {
+        $lookup: {
+          from: columnModel.COLUMN_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'boardId',
+          as: 'columns'
+        }
+      },
+      {
+        $lookup: {
+          from: cardModel.CARD_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'boardId',
+          as: 'cards'
+        }
+      },
+      {
+        $lookup: {
+          from: userModel.USER_COLLECTION_NAME,
+          localField: 'ownerIds',
+          foreignField: '_id',
+          as: 'owners',
+          // pipeline trong lookup là để xử lý một hoặc nhiều luồng cần thiết
+          // $project để chỉ định vài field không muốn lấy về bằng cách gán nó giá trị 0
+          pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+        }
+      },
+      {
+        $lookup: {
+          from: userModel.USER_COLLECTION_NAME,
+          localField: 'memberIds',
+          foreignField: '_id',
+          as: 'members',
+          pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+        }
+      }
+      {
+        $match: {
+          _id: new ObjectId(boardId),
+          _destroy: false
+        }
+      },
+      {
+        $lookup: {
+          from: columnModel.COLUMN_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'boardId',
+          as: 'columns'
+        }
+      },
+      {
+        $lookup: {
+          from: cardModel.CARD_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'boardId',
+          as: 'cards'
+        }
+      }
     ]).toArray()
 
     return result[0] || null
@@ -191,10 +223,12 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
   try {
     const queryConditions = [
       { _destroy: false },
-      { $or: [
-        { ownerIds: { $all: [new ObjectId(userId)] } },
-        { memberIds: { $all: [new ObjectId(userId)] } }
-      ] }
+      {
+        $or: [
+          { ownerIds: { $all: [new ObjectId(userId)] } },
+          { memberIds: { $all: [new ObjectId(userId)] } }
+        ]
+      }
     ]
 
     // Xử lý query filter cho từng trường hợp search board, ví dụ search title...vv
@@ -210,13 +244,15 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
       [
         { $match: { $and: queryConditions } },
         { $sort: { title: 1 } },
-        { $facet: {
-          'queryBoards': [
-            { $skip: pagingSkipValue(page, itemsPerPage) },
-            { $limit: itemsPerPage }
-          ],
-          'queryTotalBoards': [{ $count: 'countedAllBoards' }]
-        } }
+        {
+          $facet: {
+            'queryBoards': [
+              { $skip: pagingSkipValue(page, itemsPerPage) },
+              { $limit: itemsPerPage }
+            ],
+            'queryTotalBoards': [{ $count: 'countedAllBoards' }]
+          }
+        }
       ],
       // Khai báo thêm thuộc tính collation locale 'en' để fix chữ B hoa và a thường ở trên
       // https://www.mongodb.com/docs/v6.0/reference/collation/#std-label-collation-document-fields
@@ -245,6 +281,15 @@ const pushMemberIds = async (boardId, userId) => {
   } catch (error) { throw new Error(error) }
 }
 
+const deleteOneById = async (boardId) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).deleteOne({
+      _id: new ObjectId(boardId)
+    })
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -255,5 +300,6 @@ export const boardModel = {
   update,
   pullColumnOrderIds,
   getBoards,
-  pushMemberIds
+  pushMemberIds,
+  deleteOneById
 }

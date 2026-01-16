@@ -15,6 +15,8 @@ Router.route('/:id')
   // call id from db start from controller, no need to go through validation
   .get(authMiddleware.isAuthorized, boardController.getBoardDetailsFromService)
   .put(authMiddleware.isAuthorized, boardValidation.update, boardController.update)
+  // delete
+  .delete(boardController.deleteItem)
 
 Router.route('/supports/moving_card')
   .put(authMiddleware.isAuthorized, boardValidation.moveCardToDifferentColumn, boardController.moveCardToDifferentColumn)
